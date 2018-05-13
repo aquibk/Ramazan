@@ -89,8 +89,8 @@ public class Home extends AppCompatActivity {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
 //        Here we get the longitude and the latitude
-//        Save in a String[] variable and use it 
-        getDataFromIntent();
+//        Saved in a String[] variable and use it
+       final String[] user_located =  getDataFromIntent();
 
 
     }
