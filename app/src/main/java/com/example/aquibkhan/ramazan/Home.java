@@ -18,6 +18,12 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.aquibkhan.ramazan.Fragment.ExploreFragment;
 import com.example.aquibkhan.ramazan.Fragment.HomeFragment;
 import com.example.aquibkhan.ramazan.Fragment.ProfileFragment;
@@ -26,11 +32,17 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.json.JSONObject;
+
 
 public class Home extends AppCompatActivity {
     private static final String TAG = "Home";
 
     private TextView mTextMessage;
+
+    private String url;
+
+    private RequestQueue queue;
 
     private FusedLocationProviderClient mFusedLocationClient;
 
@@ -92,6 +104,9 @@ public class Home extends AppCompatActivity {
 //        Saved in a String[] variable and use it
        final String[] user_located =  getDataFromIntent();
 
+       queue = Volley.newRequestQueue(this);
+
+
 
     }
 
@@ -104,7 +119,26 @@ public class Home extends AppCompatActivity {
             longitude = extra.getString("longitude");
             latitude = extra.getString("latitude");
         }
+
         String[] result = {longitude,latitude};
+        Log.d(TAG, "getDataFromIntent: "+longitude);
+        Log.d(TAG, "getDataFromIntent: "+latitude);
+        url = "http://api.aladhan.com/v1/calendar?latitude="+latitude+"&longitude="+longitude+"&method=2&month=5&year=2018";
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.d(TAG, "onResponse() called with: response = [" + response + "]");
+                Toast.makeText(Home.this, ""+response.toString(), Toast.LENGTH_SHORT).show();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+
+        queue.add(jsonObjectRequest);
         return result;
     }
 }
