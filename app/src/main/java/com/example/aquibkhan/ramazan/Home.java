@@ -35,7 +35,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import org.json.JSONObject;
 
 
-public class Home extends AppCompatActivity {
+public class Home extends AppCompatActivity implements LocationListener {
     private static final String TAG = "Home";
 
     private TextView mTextMessage;
@@ -43,6 +43,8 @@ public class Home extends AppCompatActivity {
     private String url;
 
     private RequestQueue queue;
+
+    private LocationManager locationManager;
 
     private FusedLocationProviderClient mFusedLocationClient;
 
@@ -99,46 +101,53 @@ public class Home extends AppCompatActivity {
 
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-//        Here we get the longitude and the latitude
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Location location = locationManager.getLastKnownLocation(locationManager.NETWORK_PROVIDER);
+        onLocationChanged(location);
+
+        //        Here we get the longitude and the latitude
 //        Saved in a String[] variable and use it
-       final String[] user_located =  getDataFromIntent();
 
        queue = Volley.newRequestQueue(this);
 
+    }
 
+    @Override
+    public void onLocationChanged(Location location) {
+
+        Double longitude = null, latitude = null;
+
+        if(location != null){
+            longitude = location.getLongitude();
+            latitude = location.getLatitude();
+        }
+
+        Toast.makeText(this, ""+longitude+" "+latitude+"", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
 
     }
 
-    private String[] getDataFromIntent(){
-//        here we are getting data from the intent create i nthe MainActivity.java
-        String longitude = null;
-        String latitude = null;
-        Bundle extra = getIntent().getExtras();
-        if(extra!=null){
-            longitude = extra.getString("longitude");
-            latitude = extra.getString("latitude");
-        }
+    @Override
+    public void onProviderEnabled(String s) {
 
-        String[] result = {longitude,latitude};
-        Log.d(TAG, "getDataFromIntent: "+longitude);
-        Log.d(TAG, "getDataFromIntent: "+latitude);
-        url = "http://api.aladhan.com/v1/calendar?latitude="+latitude+"&longitude="+longitude+"&method=2&month=5&year=2018";
+    }
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.d(TAG, "onResponse() called with: response = [" + response + "]");
-                Toast.makeText(Home.this, ""+response.toString(), Toast.LENGTH_SHORT).show();
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
+    @Override
+    public void onProviderDisabled(String s) {
 
-            }
-        });
-
-        queue.add(jsonObjectRequest);
-        return result;
     }
 }
